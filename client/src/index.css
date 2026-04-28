@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Google Sans", sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: 'Google Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #fbfbf0;
+  @apply text-neutral-900;
+}
