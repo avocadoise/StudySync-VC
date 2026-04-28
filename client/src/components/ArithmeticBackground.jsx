@@ -5,18 +5,23 @@ const SYMBOLS = ['+', '−', '×', '÷', '=', '%', 'π', '√', 'x²', '1+1', 'A
 export const ArithmeticBackground = () => {
   const items = useMemo(() => {
     const temp = [];
-    // Generate enough symbols to scatter across the screen
-    for (let i = 0; i < 80; i++) {
-      temp.push({
-        id: i,
-        symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        fontSize: `${Math.random() * 1.5 + 0.8}rem`, // varied sizes: 0.8rem to 2.3rem
-        transform: `rotate(${Math.random() * 360}deg)`,
-        // Make opacity slightly higher and use a darker color
-        opacity: Math.random() * 0.4 + 0.2
-      });
+    const rows = 16;
+    const cols = 24;
+    
+    let idCounter = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        temp.push({
+          id: idCounter,
+          symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+          left: `${(c / cols) * 100 + 2}%`,
+          top: `${(r / rows) * 100 + 2}%`,
+          fontSize: '1rem',
+          transform: 'rotate(0deg)',
+          opacity: 0.15
+        });
+        idCounter++;
+      }
     }
     return temp;
   }, []);
@@ -28,7 +33,7 @@ export const ArithmeticBackground = () => {
           key={item.id}
           className="absolute font-semibold"
           style={{
-            color: '#b5b5a6', // Darker off-white/beige to stand out on the #fbfbf0 background
+            color: '#b5b5a6',
             left: item.left,
             top: item.top,
             fontSize: item.fontSize,
