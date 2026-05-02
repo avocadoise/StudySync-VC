@@ -4,7 +4,8 @@ const {
   getReviewers,
   getReviewer,
   deleteReviewer,
-  getStudyRecommendation
+  getStudyRecommendation,
+  validateInput
 } = require('../controllers/aiController');
 const { protect } = require('../middleware/authMiddleware');
 const validateObjectId = require('../middleware/validateObjectId');
@@ -17,6 +18,7 @@ router.use(protect);
 // Generate
 router.post('/generate-reviewer', generateReviewer);
 router.post('/study-recommendation', getStudyRecommendation);
+router.post('/validate-input', validateInput);
 
 // CRUD
 router.route('/reviewers')
