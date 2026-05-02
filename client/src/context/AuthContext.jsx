@@ -1,6 +1,5 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import { loginUser, registerUser, getCurrentUser } from '../api/authApi';
-import axiosInstance from '../api/axiosInstance';
 
 const AuthContext = createContext();
 
@@ -39,39 +38,31 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
-    try {
-      const response = await loginUser(credentials);
-      const extractedToken = response?.data?.token;
-      const extractedUser = response?.data?.user;
+    const response = await loginUser(credentials);
+    const extractedToken = response?.data?.token;
+    const extractedUser = response?.data?.user;
 
-      if (extractedToken && extractedUser) {
-        localStorage.setItem('token', extractedToken);
-        setToken(extractedToken);
-        setUser(extractedUser);
-        return;
-      }
-      throw new Error('Invalid response from server');
-    } catch (err) {
-      throw err;
+    if (extractedToken && extractedUser) {
+      localStorage.setItem('token', extractedToken);
+      setToken(extractedToken);
+      setUser(extractedUser);
+      return;
     }
+    throw new Error('Invalid response from server');
   };
 
   const register = async (userData) => {
-    try {
-      const response = await registerUser(userData);
-      const extractedToken = response?.data?.token;
-      const extractedUser = response?.data?.user;
+    const response = await registerUser(userData);
+    const extractedToken = response?.data?.token;
+    const extractedUser = response?.data?.user;
 
-      if (extractedToken && extractedUser) {
-        localStorage.setItem('token', extractedToken);
-        setToken(extractedToken);
-        setUser(extractedUser);
-        return;
-      }
-      throw new Error('Invalid response from server');
-    } catch (err) {
-      throw err;
+    if (extractedToken && extractedUser) {
+      localStorage.setItem('token', extractedToken);
+      setToken(extractedToken);
+      setUser(extractedUser);
+      return;
     }
+    throw new Error('Invalid response from server');
   };
 
   const logout = () => {
