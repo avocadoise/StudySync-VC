@@ -1,4 +1,3 @@
-import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Protected Route & Layouts
@@ -15,6 +14,7 @@ import StudyPlanner from './pages/StudyPlanner';
 import Notes from './pages/Notes';
 import FocusTimer from './pages/FocusTimer';
 import AIReviewer from './pages/AIReviewer';
+import CalendarPage from './pages/Calendar';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -31,6 +31,7 @@ function App() {
         <Route path="/subjects" element={<Subjects />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/study-planner" element={<StudyPlanner />} />
+        <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/notes" element={<Notes />} />
         <Route path="/focus-timer" element={<FocusTimer />} />
         <Route path="/ai-reviewer" element={<AIReviewer />} />
