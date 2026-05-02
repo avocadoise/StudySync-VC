@@ -7,3 +7,4 @@ build/
 client/dist/
 server/dist/
 .DS_Store
+presentation/
