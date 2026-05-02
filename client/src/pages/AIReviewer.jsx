@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getNotes } from '../api/noteApi';
 import { generateReviewer, getReviewers, deleteReviewer } from '../api/aiApi';
@@ -33,6 +33,7 @@ const AIReviewer = () => {
 
   useEffect(() => {
     fetchInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchInitialData = async () => {
