@@ -12,6 +12,7 @@ const studyPlanRoutes = require('./routes/studyPlanRoutes');
 const focusSessionRoutes = require('./routes/focusSessionRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const calendarRoutes = require('./routes/calendarRoutes');
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/study-plans', studyPlanRoutes);
 app.use('/api/focus-sessions', focusSessionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/calendar', calendarRoutes);
 
 // Health Check Route
 app.get('/api/health', (req, res) => {
