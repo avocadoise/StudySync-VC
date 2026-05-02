@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getSubjects, createSubject, updateSubject, deleteSubject } from '../api/subjectApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
   BookOpen, Plus, Pencil, Trash2, AlertTriangle, User,
-  Clock, Hash, X, RefreshCw, LayoutDashboard
+  Clock, Hash, X
 } from 'lucide-react';
 
 const Subjects = () => {
