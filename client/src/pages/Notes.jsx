@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getNotes, createNote, updateNote, deleteNote } from '../api/noteApi';
 import { getSubjects } from '../api/subjectApi';
 import LoadingSpinner from '../components/LoadingSpinner';
