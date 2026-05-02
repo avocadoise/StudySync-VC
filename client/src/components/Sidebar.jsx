@@ -43,24 +43,24 @@ const Sidebar = ({ isOpen, onClose }) => {
       {/* Mobile Backdrop Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-gray-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity" 
+          className="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm transition-opacity md:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Main Sidebar Container */}
       <div 
-        className={`fixed md:static inset-y-0 left-0 w-64 bg-white shadow-xl md:shadow-none h-full flex flex-col justify-between border-r border-gray-100 z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-full w-64 transform flex-col justify-between border-r border-gray-100 bg-white shadow-xl transition-transform duration-300 ease-in-out dark:border-slate-800 dark:bg-slate-950 md:static md:translate-x-0 md:shadow-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div>
           <div className="p-6 pb-2 flex items-center justify-between">
-            <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: '#010057' }}>StudySync</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight text-[#010057] dark:text-blue-100">StudySync</h1>
             {/* Mobile Close Button */}
             <button 
               onClick={onClose} 
-              className="md:hidden text-gray-400 hover:text-red-500 hover:bg-gray-100 p-1.5 rounded-lg transition-colors"
+              className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-red-300 md:hidden"
             >
               <X size={22} />
             </button>
@@ -74,8 +74,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                 className={({ isActive }) =>
                   `flex items-center px-6 py-3 mx-3 rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 font-bold shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600'
+                      ? 'bg-blue-50 text-blue-700 font-bold shadow-sm dark:bg-blue-500/15 dark:text-blue-200'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-blue-300'
                   }`
                 }
               >
@@ -85,10 +85,10 @@ const Sidebar = ({ isOpen, onClose }) => {
             ))}
           </nav>
         </div>
-        <div className="p-4 mb-4 border-t border-gray-50 bg-white">
+        <div className="mb-4 border-t border-gray-50 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
           <button
             onClick={handleLogout}
-            className="flex items-center w-full px-6 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-semibold"
+            className="flex w-full items-center rounded-xl px-6 py-3 font-semibold text-red-600 transition-colors hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/10"
           >
             <LogOut size={20} className="mr-3" />
             Logout

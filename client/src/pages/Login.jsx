@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { StudyBoxPhysicsBackground } from '../components/StudyBoxPhysicsBackground';
 import { ArithmeticBackground } from '../components/ArithmeticBackground';
+import ThemeToggle from '../components/ThemeToggle';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -31,7 +32,11 @@ const Login = () => {
   };
 
   return (
-    <div className="relative flex flex-col min-h-screen items-center justify-center overflow-hidden font-sans text-neutral-900 p-4" style={{ backgroundColor: '#fbfbf0' }}>
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#fbfbf0] p-4 font-sans text-neutral-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
+      <div className="absolute right-4 top-4 z-20">
+        <ThemeToggle />
+      </div>
+
       {/* Subtle White Arithmetic Background Layer */}
       <ArithmeticBackground />
 
@@ -43,14 +48,14 @@ const Login = () => {
         
         {/* Title */}
         <h1 
-          className="text-6xl md:text-7xl font-bold mb-6 text-center" 
-          style={{ fontFamily: "'Momo Signature', cursive", color: '#010057' }}
+          className="mb-6 text-center text-6xl font-bold text-[#010057] dark:text-blue-100 md:text-7xl"
+          style={{ fontFamily: "'Momo Signature', cursive" }}
         >
           StudySync
         </h1>
 
         {/* Login Card Layer */}
-        <div className="w-full p-8 bg-white border border-neutral-200 shadow-xl rounded-2xl">
+        <div className="w-full rounded-2xl border border-neutral-200 bg-white p-8 shadow-xl transition-colors dark:border-slate-800 dark:bg-slate-900/95">
           <div className="mb-8 text-center">
             <h2 className="text-2xl font-bold tracking-tight text-neutral-900 mb-2">Welcome back</h2>
             <p className="text-neutral-600 text-sm">Log in to your account to continue.</p>
@@ -72,7 +77,7 @@ const Login = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
+              className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 placeholder-neutral-400 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500"
               placeholder="student@example.com"
               disabled={loading}
               required
@@ -90,7 +95,7 @@ const Login = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
+              className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-neutral-900 placeholder-neutral-400 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder-slate-500"
               placeholder="••••••••"
               disabled={loading}
               required

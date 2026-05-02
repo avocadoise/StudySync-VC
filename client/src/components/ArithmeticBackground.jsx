@@ -33,7 +33,7 @@ export const ArithmeticBackground = () => {
           key={item.id}
           className="absolute font-semibold"
           style={{
-            color: '#b5b5a6',
+            color: 'var(--math-symbol-color)',
             left: item.left,
             top: item.top,
             fontSize: item.fontSize,

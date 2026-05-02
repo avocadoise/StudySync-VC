@@ -1,7 +1,19 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Google Sans", sans-serif;
+}
+
+:root {
+  --app-bg: #fbfbf0;
+  --math-symbol-color: #b5b5a6;
+}
+
+.dark {
+  --app-bg: #020617;
+  --math-symbol-color: rgba(148, 163, 184, 0.28);
 }
 
 body {
@@ -9,8 +21,271 @@ body {
   font-family: 'Google Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #fbfbf0;
+  background-color: var(--app-bg);
   @apply text-neutral-900;
+}
+
+.dark body {
+  @apply text-slate-100;
+}
+
+.dark .bg-white {
+  background-color: #0f172a;
+}
+
+.dark .bg-gray-50,
+.dark .bg-neutral-50 {
+  background-color: #111827;
+}
+
+.dark .bg-gray-100 {
+  background-color: #1f2937;
+}
+
+.dark .bg-blue-50 {
+  background-color: rgba(37, 99, 235, 0.14);
+}
+
+.dark .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.18);
+}
+
+.dark .bg-indigo-50,
+.dark .from-indigo-50 {
+  background-color: rgba(79, 70, 229, 0.14);
+}
+
+.dark .bg-indigo-100 {
+  background-color: rgba(99, 102, 241, 0.18);
+}
+
+.dark .bg-purple-50,
+.dark .to-purple-50 {
+  background-color: rgba(147, 51, 234, 0.14);
+}
+
+.dark .bg-purple-100 {
+  background-color: rgba(168, 85, 247, 0.18);
+}
+
+.dark .bg-green-50,
+.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.14);
+}
+
+.dark .bg-green-100,
+.dark .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.18);
+}
+
+.dark .bg-yellow-50 {
+  background-color: rgba(245, 158, 11, 0.14);
+}
+
+.dark .bg-yellow-100 {
+  background-color: rgba(245, 158, 11, 0.18);
+}
+
+.dark .bg-orange-50 {
+  background-color: rgba(249, 115, 22, 0.14);
+}
+
+.dark .bg-orange-100 {
+  background-color: rgba(249, 115, 22, 0.18);
+}
+
+.dark .bg-teal-50 {
+  background-color: rgba(20, 184, 166, 0.14);
+}
+
+.dark .bg-teal-100 {
+  background-color: rgba(20, 184, 166, 0.18);
+}
+
+.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.14);
+}
+
+.dark .bg-red-100,
+.dark .bg-rose-100 {
+  background-color: rgba(244, 63, 94, 0.18);
+}
+
+.dark .bg-white\/60 {
+  background-color: rgba(15, 23, 42, 0.72);
+}
+
+.dark .bg-white\/80 {
+  background-color: rgba(15, 23, 42, 0.84);
+}
+
+.dark .bg-gradient-to-br.from-indigo-50.to-purple-50 {
+  background-image: linear-gradient(135deg, rgba(49, 46, 129, 0.7), rgba(88, 28, 135, 0.48));
+}
+
+.dark .border-gray-50,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-neutral-200,
+.dark .border-neutral-300 {
+  border-color: #1e293b;
+}
+
+.dark .border-blue-200,
+.dark .border-blue-300 {
+  border-color: rgba(96, 165, 250, 0.32);
+}
+
+.dark .border-indigo-50,
+.dark .border-indigo-100,
+.dark .border-indigo-200 {
+  border-color: rgba(129, 140, 248, 0.3);
+}
+
+.dark .border-purple-200 {
+  border-color: rgba(192, 132, 252, 0.3);
+}
+
+.dark .border-green-200,
+.dark .border-emerald-200 {
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.dark .border-yellow-200 {
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.dark .border-orange-200 {
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+.dark .border-teal-200 {
+  border-color: rgba(45, 212, 191, 0.3);
+}
+
+.dark .border-red-100,
+.dark .border-red-200,
+.dark .border-rose-200 {
+  border-color: rgba(248, 113, 113, 0.32);
+}
+
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-neutral-900 {
+  color: #f8fafc;
+}
+
+.dark .text-gray-700,
+.dark .text-neutral-700 {
+  color: #e2e8f0;
+}
+
+.dark .text-gray-600,
+.dark .text-neutral-600 {
+  color: #cbd5e1;
+}
+
+.dark .text-gray-500,
+.dark .text-neutral-500,
+.dark .text-gray-400,
+.dark .text-neutral-400 {
+  color: #94a3b8;
+}
+
+.dark .text-blue-600,
+.dark .text-blue-700 {
+  color: #93c5fd;
+}
+
+.dark .text-indigo-600,
+.dark .text-indigo-700,
+.dark .text-indigo-900 {
+  color: #c4b5fd;
+}
+
+.dark .text-purple-600,
+.dark .text-purple-700 {
+  color: #d8b4fe;
+}
+
+.dark .text-green-600,
+.dark .text-green-700,
+.dark .text-emerald-700 {
+  color: #86efac;
+}
+
+.dark .text-yellow-500,
+.dark .text-yellow-600,
+.dark .text-yellow-700,
+.dark .text-yellow-800,
+.dark .text-yellow-950 {
+  color: #fde68a;
+}
+
+.dark .text-orange-500,
+.dark .text-orange-600,
+.dark .text-orange-700 {
+  color: #fdba74;
+}
+
+.dark .text-teal-600 {
+  color: #5eead4;
+}
+
+.dark .text-red-500,
+.dark .text-red-600,
+.dark .text-red-700,
+.dark .text-rose-700 {
+  color: #fca5a5;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #020617;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b;
+}
+
+.dark option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.dark .shadow-sm,
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: #1e293b;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: #334155;
+}
+
+.dark .hover\:bg-blue-50:hover {
+  background-color: rgba(37, 99, 235, 0.2);
+}
+
+.dark .hover\:bg-purple-50:hover {
+  background-color: rgba(147, 51, 234, 0.2);
+}
+
+.dark .hover\:bg-orange-50:hover {
+  background-color: rgba(249, 115, 22, 0.2);
+}
+
+.dark .hover\:bg-red-50:hover {
+  background-color: rgba(239, 68, 68, 0.18);
 }
 
 .fc {
@@ -71,6 +346,39 @@ body {
   font-size: 0.75rem;
   font-weight: 700;
   padding: 0.125rem 0.25rem;
+}
+
+.dark .fc {
+  --fc-page-bg-color: #0f172a;
+  --fc-border-color: #334155;
+  --fc-today-bg-color: rgba(37, 99, 235, 0.14);
+  --fc-neutral-bg-color: #111827;
+  --fc-neutral-text-color: #e2e8f0;
+  color: #e2e8f0;
+}
+
+.dark .fc .fc-toolbar-title {
+  color: #f8fafc;
+}
+
+.dark .fc .fc-daygrid-day-number,
+.dark .fc .fc-col-header-cell-cushion {
+  color: #e2e8f0;
+}
+
+.dark .fc .fc-scrollgrid-section-header th,
+.dark .fc .fc-col-header-cell {
+  background-color: #0f172a;
+}
+
+.dark .fc-theme-standard td,
+.dark .fc-theme-standard th {
+  border-color: #334155;
+}
+
+.dark .fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #2563eb;
+  border-color: #2563eb;
 }
 
 @media (max-width: 768px) {
