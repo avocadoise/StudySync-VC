@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   getTasks,
   createTask,
@@ -10,7 +10,7 @@ import { getSubjects } from '../api/subjectApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
   ListTodo, Plus, Pencil, Trash2, AlertTriangle, CalendarDays,
-  BookOpen, X, RefreshCw, Filter, CheckCircle2, Clock, AlertCircle, Inbox
+  BookOpen, X, Filter, Inbox
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
