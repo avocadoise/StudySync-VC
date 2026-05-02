@@ -87,7 +87,7 @@ const getFocusSessionStats = asyncHandler(async (req, res, next) => {
       }
     ]),
     FocusSession.aggregate([
-      { $match: { userId, sessionType: { $ne: 'Short Break' } } }, // Assuming breaks don't count for actual study focus stats, but let's include all requested by prompt or refine. Just group.
+      { $match: { userId } },
       { $group: { _id: "$subjectId", focusMinutes: { $sum: "$duration" } } },
       { $lookup: { from: 'subjects', localField: '_id', foreignField: '_id', as: 'subject' } },
       { $unwind: "$subject" },
