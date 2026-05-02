@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * StatCard — Reusable card for displaying a single dashboard metric.
  *
