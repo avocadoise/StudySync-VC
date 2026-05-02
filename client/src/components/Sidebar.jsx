@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -6,6 +5,7 @@ import {
   BookOpen,
   CheckSquare,
   Calendar,
+  CalendarDays,
   FileText,
   Timer,
   BrainCircuit,
@@ -27,6 +27,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Subjects', path: '/subjects', icon: <BookOpen size={20} /> },
     { name: 'Tasks', path: '/tasks', icon: <CheckSquare size={20} /> },
     { name: 'Study Planner', path: '/study-planner', icon: <Calendar size={20} /> },
+    { name: 'Calendar', path: '/calendar', icon: <CalendarDays size={20} /> },
     { name: 'Notes', path: '/notes', icon: <NotesIcon size={20} /> },
     { name: 'Focus Timer', path: '/focus-timer', icon: <Timer size={20} /> },
     { name: 'AI Reviewer', path: '/ai-reviewer', icon: <BrainCircuit size={20} /> },
