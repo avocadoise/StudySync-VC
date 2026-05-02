@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 const SYMBOLS = ['+', '−', '×', '÷', '=', '%', 'π', '√', 'x²', '1+1', 'A+', '<', '>'];
 
