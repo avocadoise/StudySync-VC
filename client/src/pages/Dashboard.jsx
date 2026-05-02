@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getDashboardSummary } from '../api/dashboardApi';
 import { getStudyRecommendation } from '../api/aiApi';
@@ -179,7 +179,7 @@ const Dashboard = () => {
   }
 
   // ── Empty state (new user, no data yet) ────────────────────────────
-  if (!data || (data.totalSubjects === 0 && data.totalTasks === 0 && data.totalNotes === 0 && data.totalFocusMinutes === 0)) {
+  if (!data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-10 max-w-lg w-full">
@@ -211,6 +211,12 @@ const Dashboard = () => {
   }
 
   // ── Prepare chart data arrays ──────────────────────────────────────
+  const isDashboardEmpty =
+    data.totalSubjects === 0 &&
+    data.totalTasks === 0 &&
+    data.totalNotes === 0 &&
+    data.totalFocusMinutes === 0;
+
   const statusChartData = Object.entries(data.tasksByStatus || {})
     .filter(([, count]) => count > 0)
     .map(([name, value]) => ({ name, value }));
@@ -243,6 +249,33 @@ const Dashboard = () => {
       </div>
 
       {/* ────────── Stat Cards Grid ────────── */}
+      {isDashboardEmpty && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 text-center shadow-sm">
+          <Inbox size={48} className="text-blue-300 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Welcome to StudySync!
+          </h2>
+          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+            Your dashboard is empty for now. Start by adding subjects, creating tasks,
+            or taking notes. Your progress will appear here as you work.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <a
+              href="/subjects"
+              className="inline-flex items-center gap-2 bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-colors text-sm"
+            >
+              <BookOpen size={16} /> Add Subjects
+            </a>
+            <a
+              href="/tasks"
+              className="inline-flex items-center gap-2 bg-white text-blue-600 border border-blue-300 font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-colors text-sm"
+            >
+              <ListTodo size={16} /> Create Tasks
+            </a>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={<BookOpen size={22} />}
@@ -346,64 +379,65 @@ const Dashboard = () => {
 
           {aiRecommendation && !aiError && !aiLoading && (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              {aiRecommendation.warning ? (
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-indigo-50">
+                <h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <ArrowRight size={16} className="text-indigo-500" />
+                  Priority Focus
+                </h4>
+                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                  {aiRecommendation.mainRecommendation || 'No primary recommendation was returned.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-indigo-50">
+                  <h4 className="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wide opacity-80">
+                    Priority Subjects
+                  </h4>
+                  {aiRecommendation.prioritySubjects?.length > 0 ? (
+                    <ul className="space-y-2">
+                      {aiRecommendation.prioritySubjects.map((sub, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
+                          <span className="flex-1">
+                            <span className="font-semibold">{sub.subject || sub}</span>
+                            {sub.reason ? <span className="block text-gray-500">{sub.reason}</span> : null}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500 text-sm italic">No specific subjects flagged.</p>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-xl p-5 shadow-sm border border-indigo-50">
+                  <h4 className="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wide opacity-80">
+                    Suggested Actions
+                  </h4>
+                  {aiRecommendation.suggestedActions?.length > 0 ? (
+                    <ul className="space-y-2">
+                      {aiRecommendation.suggestedActions.map((action, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                          <CheckCircle2 size={16} className="text-green-500 shrink-0 mt-0.5" />
+                          <span className="flex-1">{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500 text-sm italic">No specific actions suggested.</p>
+                  )}
+                </div>
+              </div>
+
+              {aiRecommendation.warning && (
                 <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-5 rounded-xl flex items-start gap-3">
                   <AlertTriangle className="mt-0.5 shrink-0 text-yellow-500" size={20} />
                   <div>
-                    <h4 className="font-bold mb-1">Insufficient Data</h4>
+                    <h4 className="font-bold mb-1">Warning</h4>
                     <p className="text-sm leading-relaxed">{aiRecommendation.warning}</p>
                   </div>
                 </div>
-              ) : (
-                <>
-                  <div className="bg-white rounded-xl p-5 shadow-sm border border-indigo-50">
-                    <h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
-                      <ArrowRight size={16} className="text-indigo-500" />
-                      Priority Focus
-                    </h4>
-                    <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                      {aiRecommendation.mainRecommendation}
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white rounded-xl p-5 shadow-sm border border-indigo-50">
-                      <h4 className="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wide opacity-80">
-                        Priority Subjects
-                      </h4>
-                      {aiRecommendation.prioritySubjects?.length > 0 ? (
-                        <ul className="space-y-2">
-                          {aiRecommendation.prioritySubjects.map((sub, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
-                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
-                              <span className="flex-1">{sub}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500 text-sm italic">No specific subjects flagged.</p>
-                      )}
-                    </div>
-
-                    <div className="bg-white rounded-xl p-5 shadow-sm border border-indigo-50">
-                      <h4 className="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wide opacity-80">
-                        Suggested Actions
-                      </h4>
-                      {aiRecommendation.suggestedActions?.length > 0 ? (
-                        <ul className="space-y-2">
-                          {aiRecommendation.suggestedActions.map((action, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
-                              <CheckCircle2 size={16} className="text-green-500 shrink-0 mt-0.5" />
-                              <span className="flex-1">{action}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500 text-sm italic">No specific actions suggested.</p>
-                      )}
-                    </div>
-                  </div>
-                </>
               )}
             </div>
           )}
