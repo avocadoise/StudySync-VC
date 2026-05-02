@@ -24,11 +24,22 @@ const studyPlanSchema = new mongoose.Schema(
     },
     startTime: {
       type: String,
-      required: [true, 'Please provide a start time']
+      required: [true, 'Please provide a start time'],
+      match: [/^([01]\d|2[0-3]):[0-5]\d$/, 'Start time must use HH:mm format']
     },
     endTime: {
       type: String,
-      required: [true, 'Please provide an end time']
+      required: [true, 'Please provide an end time'],
+      match: [/^([01]\d|2[0-3]):[0-5]\d$/, 'End time must use HH:mm format'],
+      validate: {
+        validator(value) {
+          if (!this.startTime || !value) {
+            return true;
+          }
+          return value > this.startTime;
+        },
+        message: 'End time must be after start time'
+      }
     },
     notes: {
       type: String,
