@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   getStudyPlans,
   createStudyPlan,
@@ -11,7 +11,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import {
   CalendarDays, Plus, Pencil, Trash2, AlertTriangle, BookOpen,
-  Clock, X, Filter, Target, Inbox, CheckCircle2, XCircle, AlertCircle
+  Clock, X, Filter, Target
 } from 'lucide-react';
 
 const STATUS_COLORS = {
