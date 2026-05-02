@@ -7,7 +7,11 @@ const StudyPlan = require('../models/StudyPlan');
 const FocusSession = require('../models/FocusSession');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/AppError');
-const { generateReviewerFromNote, generateStudyRecommendation } = require('../services/aiService');
+const {
+  generateReviewerFromNote,
+  generateStudyRecommendation,
+  validateAcademicInput
+} = require('../services/aiService');
 
 // @desc    Generate a new AI Reviewer from a Note
 // @route   POST /api/ai/generate-reviewer
@@ -127,47 +131,74 @@ const getStudyRecommendation = asyncHandler(async (req, res, next) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // 1. Gather User's Academic Data Concurrently
-  const [subjects, pendingTasks, overdueTasks, upcomingPlans, recentFocus] = await Promise.all([
-    Subject.find({ userId }).select('name'),
-    Task.find({ userId, status: { $ne: 'Completed' } }).select('title priority dueDate status').sort({ priority: -1, dueDate: 1 }),
-    Task.find({ userId, dueDate: { $lt: today }, status: { $ne: 'Completed' } }).select('title priority dueDate'),
-    StudyPlan.find({ userId, studyDate: { $gte: today } }).populate('subjectId', 'name').select('topic studyDate startTime endTime status'),
-    FocusSession.find({ userId }).populate('subjectId', 'name').sort({ completedAt: -1 }).limit(5).select('duration sessionType')
+  const [
+    subjects,
+    pendingTasks,
+    overdueTasks,
+    highPriorityTasks,
+    upcomingDeadlines,
+    upcomingPlans,
+    recentFocus
+  ] = await Promise.all([
+    Subject.find({ userId }).select('name code'),
+    Task.find({ userId, status: { $in: ['Pending', 'In Progress', 'Overdue'] } })
+      .populate('subjectId', 'name')
+      .select('title priority dueDate status subjectId')
+      .sort({ dueDate: 1 })
+      .limit(20),
+    Task.find({ userId, dueDate: { $lt: today }, status: { $ne: 'Completed' } })
+      .populate('subjectId', 'name')
+      .select('title priority dueDate status subjectId')
+      .sort({ dueDate: 1 })
+      .limit(10),
+    Task.find({ userId, priority: { $in: ['High', 'Urgent'] }, status: { $ne: 'Completed' } })
+      .populate('subjectId', 'name')
+      .select('title priority dueDate status subjectId')
+      .sort({ dueDate: 1 })
+      .limit(10),
+    Task.find({ userId, dueDate: { $gte: today }, status: { $ne: 'Completed' } })
+      .populate('subjectId', 'name')
+      .select('title priority dueDate status subjectId')
+      .sort({ dueDate: 1 })
+      .limit(10),
+    StudyPlan.find({ userId, studyDate: { $gte: today } })
+      .populate('subjectId', 'name')
+      .select('topic studyDate startTime endTime status subjectId')
+      .sort({ studyDate: 1, startTime: 1 })
+      .limit(10),
+    FocusSession.find({ userId })
+      .populate('subjectId', 'name')
+      .sort({ completedAt: -1 })
+      .limit(10)
+      .select('duration sessionType completedAt subjectId')
   ]);
 
-  // 2. Format a concise summary
-  const summaryParts = [];
-  
-  if (subjects.length === 0) {
-    summaryParts.push('Student has no subjects defined yet.');
-  } else {
-    summaryParts.push(`Currently studying ${subjects.length} subjects: ${subjects.map(s => s.name).join(', ')}.`);
-  }
+  const snapshot = {
+    subjects: subjects.map((subject) => ({
+      name: subject.name,
+      code: subject.code || ''
+    })),
+    pendingTasks: pendingTasks.map(formatTaskForAi),
+    overdueTasks: overdueTasks.map(formatTaskForAi),
+    highPriorityTasks: highPriorityTasks.map(formatTaskForAi),
+    upcomingDeadlines: upcomingDeadlines.map(formatTaskForAi),
+    studyPlans: upcomingPlans.map((plan) => ({
+      subject: plan.subjectId?.name || 'Unknown subject',
+      topic: plan.topic,
+      studyDate: plan.studyDate,
+      startTime: plan.startTime,
+      endTime: plan.endTime,
+      status: plan.status
+    })),
+    recentFocusSessions: recentFocus.map((session) => ({
+      subject: session.subjectId?.name || 'Unknown subject',
+      duration: session.duration,
+      sessionType: session.sessionType,
+      completedAt: session.completedAt
+    }))
+  };
 
-  summaryParts.push(`Total pending tasks: ${pendingTasks.length}.`);
-  const highPriority = pendingTasks.filter(t => t.priority === 'High');
-  if (highPriority.length > 0) {
-    summaryParts.push(`${highPriority.length} of these tasks are High priority.`);
-  }
-  if (overdueTasks.length > 0) {
-    summaryParts.push(`WARNING: The student has ${overdueTasks.length} overdue tasks.`);
-  }
-
-  if (upcomingPlans.length > 0) {
-    summaryParts.push(`There are ${upcomingPlans.length} upcoming study plans scheduled.`);
-  } else {
-    summaryParts.push('The student currently has no study plans scheduled.');
-  }
-
-  if (recentFocus.length > 0) {
-    summaryParts.push(`Recently completed focus sessions: ${recentFocus.map(f => `${f.duration}m on ${f.subjectId?.name || 'unknown subject'}`).join(', ')}.`);
-  }
-
-  const snapshotString = summaryParts.join('\n');
-
-  // 3. Send securely to AI Service
-  const recommendation = await generateStudyRecommendation(snapshotString);
+  const recommendation = await generateStudyRecommendation(JSON.stringify(snapshot, null, 2));
 
   res.status(200).json({
     success: true,
@@ -176,10 +207,44 @@ const getStudyRecommendation = asyncHandler(async (req, res, next) => {
   });
 });
 
+const formatTaskForAi = (task) => ({
+  subject: task.subjectId?.name || 'Unknown subject',
+  title: task.title,
+  priority: task.priority,
+  status: task.status,
+  dueDate: task.dueDate
+});
+
+// @desc    Advisory AI input validation
+// @route   POST /api/ai/validate-input
+// @access  Private
+const validateInput = asyncHandler(async (req, res, next) => {
+  const moduleName = req.body.module;
+  const inputData = req.body.data || req.body.inputData;
+  const supportedModules = ['task', 'subject', 'note', 'studyPlan', 'focusSession'];
+
+  if (!moduleName || !supportedModules.includes(moduleName)) {
+    return next(new AppError('Please provide a supported module for AI validation', 400));
+  }
+
+  if (!inputData || typeof inputData !== 'object' || Array.isArray(inputData)) {
+    return next(new AppError('Please provide input data to validate', 400));
+  }
+
+  const validation = await validateAcademicInput(moduleName, inputData);
+
+  res.status(200).json({
+    success: true,
+    message: 'AI input validation completed',
+    data: validation
+  });
+});
+
 module.exports = {
   generateReviewer,
   getReviewers,
   getReviewer,
   deleteReviewer,
-  getStudyRecommendation
+  getStudyRecommendation,
+  validateInput
 };
