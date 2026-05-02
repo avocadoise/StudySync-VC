@@ -80,8 +80,8 @@ const getDashboardSummary = asyncHandler(async (req, res, next) => {
 
   // Transform Aggregated Task Stats into a clean object
   let totalTasks = 0, pendingTasks = 0, inProgressTasks = 0, completedTasks = 0;
-  let tasksByStatus = { Pending: 0, 'In Progress': 0, Completed: 0 };
-  let tasksByPriority = { Low: 0, Medium: 0, High: 0 };
+  let tasksByStatus = { Pending: 0, 'In Progress': 0, Completed: 0, Overdue: 0 };
+  let tasksByPriority = { Low: 0, Medium: 0, High: 0, Urgent: 0 };
 
   if (taskStats && taskStats.length > 0) {
     const stats = taskStats[0];
