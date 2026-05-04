@@ -30,6 +30,7 @@ const aiReviewerSchema = new mongoose.Schema(
     questions: [
       {
         question: { type: String, trim: true },
+        choices: [{ type: String, trim: true }],
         answer: { type: String, trim: true }
       }
     ],

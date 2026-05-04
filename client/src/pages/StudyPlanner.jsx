@@ -598,11 +598,11 @@ const StudyPlanner = () => {
               </form>
             </div>
             
-            <div className="p-5 border-t border-gray-100 flex gap-3 justify-end bg-gray-50/50">
+            <div className="p-5 border-t border-gray-100 flex gap-3 justify-end bg-gray-50/50 dark:border-slate-800 dark:bg-slate-900">
               <button
                 type="button"
                 onClick={closeFormModal}
-                className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 transition-colors"
+                className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 transition-colors dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
@@ -635,7 +635,7 @@ const StudyPlanner = () => {
                 type="button"
                 onClick={closeDeleteModal}
                 disabled={isDeleting}
-                className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>

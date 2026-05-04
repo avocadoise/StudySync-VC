@@ -5,8 +5,12 @@ import { generateReviewer, getReviewers, deleteReviewer } from '../api/aiApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
   Sparkles, FileText, Trash2, AlertTriangle, BookOpen,
-  Info, ChevronDown, ChevronRight, X, Layers, Lightbulb, PlayCircle
+  Info, ChevronDown, ChevronRight, X, Layers, Lightbulb, PlayCircle,
+  ArrowLeft, ArrowRight, Eye, EyeOff, CheckCircle2, XCircle
 } from 'lucide-react';
+
+const QUESTIONS_PER_PAGE = 4;
+const FLASHCARDS_PER_PAGE = 1;
 
 const AIReviewer = () => {
   const location = useLocation();
@@ -23,13 +27,16 @@ const AIReviewer = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   
-  // Accordion / View States for the Result
+  // View States for the Result
   const [openSections, setOpenSections] = useState({
     summary: true,
     keyTerms: true,
-    questions: false,
-    flashcards: false,
   });
+  const [questionPage, setQuestionPage] = useState(1);
+  const [flashcardPage, setFlashcardPage] = useState(1);
+  const [revealedAnswers, setRevealedAnswers] = useState({});
+  const [flippedFlashcards, setFlippedFlashcards] = useState({});
+  const [selectedChoices, setSelectedChoices] = useState({});
 
   useEffect(() => {
     fetchInitialData();
@@ -88,8 +95,13 @@ const AIReviewer = () => {
       setReviewers(prev => [newReviewer, ...prev]);
       setActiveReviewer(newReviewer);
       
-      // Reset open sections to top
-      setOpenSections({ summary: true, keyTerms: true, questions: false, flashcards: false });
+      // Reset result views to the beginning.
+      setOpenSections({ summary: true, keyTerms: true });
+      setQuestionPage(1);
+      setFlashcardPage(1);
+      setRevealedAnswers({});
+      setFlippedFlashcards({});
+      setSelectedChoices({});
     } catch (err) {
       console.error('Generation failed:', err);
       // Show friendly message for insufficient AI errors
@@ -120,6 +132,23 @@ const AIReviewer = () => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const toggleAnswer = (index) => {
+    setRevealedAnswers((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  const toggleFlashcard = (index) => {
+    setFlippedFlashcards((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  const handleSelectReviewer = (reviewer) => {
+    setActiveReviewer(reviewer);
+    setQuestionPage(1);
+    setFlashcardPage(1);
+    setRevealedAnswers({});
+    setFlippedFlashcards({});
+    setSelectedChoices({});
+  };
+
   // Helper to format dates
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -127,6 +156,22 @@ const AIReviewer = () => {
       month: 'short', day: 'numeric', year: 'numeric'
     });
   };
+
+  const getPageItems = (items = [], page, pageSize) => {
+    const start = (page - 1) * pageSize;
+    return items.slice(start, start + pageSize);
+  };
+
+  const getPageCount = (items = [], pageSize) => Math.max(1, Math.ceil(items.length / pageSize));
+
+  const selectChoice = (questionIndex, choice) => {
+    setSelectedChoices((prev) => ({ ...prev, [questionIndex]: choice }));
+  };
+
+  const getQuestionChoices = (question) =>
+    Array.isArray(question.choices)
+      ? question.choices.map((choice) => String(choice || '').trim()).filter(Boolean)
+      : [];
 
   if (loading) return <LoadingSpinner />;
 
@@ -261,7 +306,7 @@ const AIReviewer = () => {
                   return (
                     <div
                       key={rev._id}
-                      onClick={() => setActiveReviewer(rev)}
+                      onClick={() => handleSelectReviewer(rev)}
                       className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-colors border ${
                         isActive 
                           ? 'bg-indigo-50 border-indigo-200 text-indigo-900' 
@@ -384,69 +429,163 @@ const AIReviewer = () => {
               {/* 3. Practice Questions */}
               {activeReviewer.questions && activeReviewer.questions.length > 0 && (
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden text-left cursor-default">
-                  <div
-                    className="flex justify-between items-center p-4 bg-gray-50 cursor-pointer select-none border-b border-gray-100"
-                    onClick={() => toggleSection('questions')}
-                  >
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                       <PlayCircle size={18} className="text-rose-500" />
-                       Practice Questions
-                    </h3>
-                    {openSections.questions ? <ChevronDown size={18} className="text-gray-400" /> : <ChevronRight size={18} className="text-gray-400" />}
-                  </div>
-                  {openSections.questions && (
-                    <div className="p-5 space-y-4">
-                      {activeReviewer.questions.map((q, idx) => (
-                        <div key={idx} className="bg-rose-50/30 rounded-xl p-4 border border-rose-100 text-sm">
-                          <p className="font-bold text-gray-900 mb-2 flex gap-2">
-                            <span className="text-rose-500">Q:</span>
-                            {q.question}
-                          </p>
-                          <p className="text-gray-700 flex gap-2 border-t border-rose-100 pt-2">
-                            <span className="text-green-600 font-bold shrink-0">A:</span>
-                            <span className="leading-relaxed">{q.answer}</span>
-                          </p>
-                        </div>
-                      ))}
+                  <div className="flex flex-col gap-3 border-b border-gray-100 bg-rose-50/60 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-rose-950/30">
+                    <div>
+                      <h3 className="font-bold text-gray-800 flex items-center gap-2 dark:text-slate-100">
+                         <PlayCircle size={18} className="text-rose-500" />
+                         Practice Quiz
+                      </h3>
+                      <p className="mt-1 text-xs font-medium text-gray-500 dark:text-slate-400">
+                        {activeReviewer.questions.length} questions. Showing up to {QUESTIONS_PER_PAGE} at a time to keep the quiz focused.
+                      </p>
                     </div>
-                  )}
+                    <PageControls
+                      page={questionPage}
+                      totalPages={getPageCount(activeReviewer.questions, QUESTIONS_PER_PAGE)}
+                      onPrevious={() => setQuestionPage((page) => Math.max(1, page - 1))}
+                      onNext={() => setQuestionPage((page) => Math.min(getPageCount(activeReviewer.questions, QUESTIONS_PER_PAGE), page + 1))}
+                    />
+                  </div>
+                  <div className="p-5 grid grid-cols-1 gap-4">
+                    {getPageItems(activeReviewer.questions, questionPage, QUESTIONS_PER_PAGE).map((q, idx) => {
+                      const absoluteIndex = (questionPage - 1) * QUESTIONS_PER_PAGE + idx;
+                      const isAnswerVisible = Boolean(revealedAnswers[absoluteIndex]);
+
+                      return (
+                        <div key={absoluteIndex} className="rounded-xl border border-rose-100 bg-rose-50/30 p-4 text-sm dark:border-slate-700 dark:bg-slate-900">
+                          <div className="flex items-start gap-3">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-extrabold text-rose-600 dark:bg-rose-500/20 dark:text-rose-200">
+                              {absoluteIndex + 1}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-bold leading-relaxed text-gray-900 dark:text-slate-50">
+                                {q.question}
+                              </p>
+                              {getQuestionChoices(q).length > 0 ? (
+                                <div className="mt-4 grid gap-2">
+                                  {getQuestionChoices(q).map((choice, choiceIndex) => {
+                                    const selectedChoice = selectedChoices[absoluteIndex];
+                                    const hasSelected = Boolean(selectedChoice);
+                                    const isSelected = selectedChoice === choice;
+                                    const isCorrect = choice === q.answer;
+                                    const showCorrect = hasSelected && isCorrect;
+                                    const showWrong = hasSelected && isSelected && !isCorrect;
+
+                                    return (
+                                      <button
+                                        key={`${absoluteIndex}-${choiceIndex}-${choice}`}
+                                        type="button"
+                                        onClick={() => selectChoice(absoluteIndex, choice)}
+                                        className={`flex items-start gap-3 rounded-xl border bg-white px-3 py-2.5 text-left transition-colors ${
+                                          showCorrect
+                                            ? 'border-green-200 bg-green-50 text-green-800 dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-100'
+                                            : showWrong
+                                              ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-400/40 dark:bg-red-500/15 dark:text-red-100'
+                                              : isSelected
+                                                ? 'border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-400/40 dark:bg-rose-500/15 dark:text-rose-100'
+                                                : 'border-gray-200 text-gray-700 hover:border-rose-200 hover:bg-rose-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:border-rose-400/40 dark:hover:bg-rose-500/10'
+                                        }`}
+                                      >
+                                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-extrabold">
+                                          {String.fromCharCode(65 + choiceIndex)}
+                                        </span>
+                                        <span className="flex-1 leading-relaxed">{choice}</span>
+                                        {showCorrect && <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-green-600 dark:text-emerald-300" />}
+                                        {showWrong && <XCircle size={16} className="mt-0.5 shrink-0 text-red-600 dark:text-red-300" />}
+                                      </button>
+                                    );
+                                  })}
+                                  {selectedChoices[absoluteIndex] && (
+                                    <div className="mt-2 rounded-lg border border-green-100 bg-green-50 p-3 text-gray-700 dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-slate-100">
+                                      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-green-600 dark:text-emerald-300">Correct Answer</span>
+                                      <p className="leading-relaxed">{q.answer}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleAnswer(absoluteIndex)}
+                                    className="mt-3 inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-400/30 dark:bg-slate-950 dark:text-rose-200 dark:hover:bg-rose-500/10"
+                                  >
+                                    {isAnswerVisible ? <EyeOff size={14} /> : <Eye size={14} />}
+                                    {isAnswerVisible ? 'Hide answer' : 'Show answer'}
+                                  </button>
+                                  {isAnswerVisible && (
+                                    <div className="mt-3 rounded-lg border border-green-100 bg-green-50 p-3 text-gray-700 dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-slate-100">
+                                      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-green-600 dark:text-emerald-300">Answer</span>
+                                      <p className="leading-relaxed">{q.answer}</p>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
               {/* 4. Flashcards */}
               {activeReviewer.flashcards && activeReviewer.flashcards.length > 0 && (
                  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden text-left cursor-default">
-                  <div
-                    className="flex justify-between items-center p-4 bg-gray-50 cursor-pointer select-none border-b border-gray-100"
-                    onClick={() => toggleSection('flashcards')}
-                  >
-                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                       <Layers size={18} className="text-emerald-500" />
-                       Flashcards
-                    </h3>
-                    {openSections.flashcards ? <ChevronDown size={18} className="text-gray-400" /> : <ChevronRight size={18} className="text-gray-400" />}
-                  </div>
-                  {openSections.flashcards && (
-                    <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {activeReviewer.flashcards.map((fc, idx) => (
-                         <div key={idx} className="flip-card aspect-[3/2] bg-transparent" style={{ perspective: '1000px' }}>
-                           <div className="flip-card-inner relative w-full h-full text-center transition-transform duration-500 shadow-sm border border-gray-200 rounded-2xl cursor-pointer hover:shadow-md hover:-translate-y-1" style={{ transformStyle: 'preserve-3d' }}
-                            onClick={(e) => {
-                              e.currentTarget.style.transform = e.currentTarget.style.transform === 'rotateY(180deg)' ? 'rotateY(0deg)' : 'rotateY(180deg)';
-                            }}
-                           >
-                             <div className="flip-card-front absolute w-full h-full backface-hidden bg-white rounded-2xl flex items-center justify-center p-4 text-emerald-900 font-bold text-sm" style={{ backfaceVisibility: 'hidden' }}>
-                               {fc.front}
-                               <div className="absolute bottom-2 inset-x-0 mx-auto text-[10px] text-gray-300 uppercase tracking-widest font-semibold flex items-center justify-center gap-1">Click to flip</div>
-                             </div>
-                             <div className="flip-card-back absolute w-full h-full backface-hidden bg-emerald-50 rounded-2xl flex items-center justify-center p-4 text-emerald-900 border border-emerald-200 overflow-y-auto" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-                               <p className="text-sm font-medium leading-relaxed">{fc.back}</p>
-                             </div>
-                           </div>
-                         </div>
-                      ))}
+                  <div className="flex flex-col gap-3 border-b border-gray-100 bg-emerald-50/60 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-emerald-950/30">
+                    <div>
+                      <h3 className="font-bold text-gray-800 flex items-center gap-2 dark:text-slate-100">
+                         <Layers size={18} className="text-emerald-500" />
+                         Flashcards
+                      </h3>
+                      <p className="mt-1 text-xs font-medium text-gray-500 dark:text-slate-400">
+                        Study one card at a time. Click the card to flip between prompt and answer.
+                      </p>
                     </div>
-                  )}
+                    <PageControls
+                      page={flashcardPage}
+                      totalPages={getPageCount(activeReviewer.flashcards, FLASHCARDS_PER_PAGE)}
+                      onPrevious={() => setFlashcardPage((page) => Math.max(1, page - 1))}
+                      onNext={() => setFlashcardPage((page) => Math.min(getPageCount(activeReviewer.flashcards, FLASHCARDS_PER_PAGE), page + 1))}
+                    />
+                  </div>
+                  <div className="p-5">
+                    {getPageItems(activeReviewer.flashcards, flashcardPage, FLASHCARDS_PER_PAGE).map((fc, idx) => {
+                      const absoluteIndex = (flashcardPage - 1) * FLASHCARDS_PER_PAGE + idx;
+                      const isFlipped = Boolean(flippedFlashcards[absoluteIndex]);
+
+                      return (
+                        <button
+                          type="button"
+                          key={absoluteIndex}
+                          className="group mx-auto block min-h-72 w-full max-w-2xl rounded-2xl border border-gray-200 bg-white p-0 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-950"
+                          onClick={() => toggleFlashcard(absoluteIndex)}
+                        >
+                          <div className={`flex min-h-72 flex-col justify-between rounded-2xl p-6 transition-colors sm:p-8 ${
+                            isFlipped
+                              ? 'bg-emerald-50 text-emerald-900 dark:bg-emerald-950/70 dark:text-slate-50'
+                              : 'bg-white text-gray-900 dark:bg-slate-950 dark:text-slate-50'
+                          }`}>
+                            <div>
+                              <span className={`mb-3 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${
+                                isFlipped
+                                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200'
+                                  : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-300'
+                              }`}>
+                                Card {absoluteIndex + 1} / {activeReviewer.flashcards.length}
+                              </span>
+                              <p className="mt-8 text-center text-lg font-extrabold leading-relaxed sm:text-xl">
+                                {isFlipped ? fc.back : fc.front}
+                              </p>
+                            </div>
+                            <span className="mt-8 text-center text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-300">
+                              {isFlipped ? 'Click to see front' : 'Click to reveal answer'}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                  </div>
               )}
 
@@ -457,5 +596,31 @@ const AIReviewer = () => {
     </div>
   );
 };
+
+const PageControls = ({ page, totalPages, onPrevious, onNext }) => (
+  <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-slate-300">
+    <button
+      type="button"
+      onClick={onPrevious}
+      disabled={page <= 1}
+      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
+      aria-label="Previous page"
+    >
+      <ArrowLeft size={14} />
+    </button>
+    <span className="min-w-16 text-center">
+      {page} / {totalPages}
+    </span>
+    <button
+      type="button"
+      onClick={onNext}
+      disabled={page >= totalPages}
+      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
+      aria-label="Next page"
+    >
+      <ArrowRight size={14} />
+    </button>
+  </div>
+);
 
 export default AIReviewer;

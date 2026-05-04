@@ -5,7 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   FileText, Plus, Pencil, Trash2, AlertTriangle, BookOpen,
-  Search, X, Sparkles, Filter, Inbox, Tag, Calendar
+  Search, X, Sparkles, Filter, Inbox, Tag, Calendar, Eye
 } from 'lucide-react';
 
 const Notes = () => {
@@ -21,10 +21,12 @@ const Notes = () => {
 
   // Modals & Form State
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [editingId, setEditingId] = useState(null);
+  const [selectedNote, setSelectedNote] = useState(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -96,6 +98,7 @@ const Notes = () => {
     if (subjects.length === 0) return;
     setFormError('');
     setEditingId(null);
+    setSelectedNote(null);
     setFormData({
       title: '',
       subjectId: subjects.length > 0 ? subjects[0]._id : '',
@@ -105,8 +108,20 @@ const Notes = () => {
     setIsFormModalOpen(true);
   };
 
+  const openViewModal = (note) => {
+    setSelectedNote(note);
+    setIsViewModalOpen(true);
+  };
+
+  const closeViewModal = () => {
+    setIsViewModalOpen(false);
+    setSelectedNote(null);
+  };
+
   const openEditModal = (note) => {
     setFormError('');
+    setIsViewModalOpen(false);
+    setSelectedNote(note);
     setEditingId(note._id);
     setFormData({
       title: note.title || '',
@@ -117,7 +132,10 @@ const Notes = () => {
     setIsFormModalOpen(true);
   };
 
-  const closeFormModal = () => setIsFormModalOpen(false);
+  const closeFormModal = () => {
+    setIsFormModalOpen(false);
+    setEditingId(null);
+  };
 
   const handleFormChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -300,26 +318,33 @@ const Notes = () => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {filteredNotes.map((note) => {
             const subjInfo = getSubjectDisplayInfo(note.subjectId);
             return (
               <div
                 key={note._id}
-                className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col group relative"
+                className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col group relative min-h-80"
               >
                 {/* Action Buttons */}
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-10 bg-white/90 backdrop-blur pl-2 rounded-l-lg">
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 z-10 bg-white/90 backdrop-blur pl-2 rounded-l-lg dark:bg-slate-900/90 dark:border dark:border-slate-700 dark:shadow-lg">
+                  <button
+                    onClick={() => openViewModal(note)}
+                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-slate-400 dark:hover:bg-blue-500/10 dark:hover:text-blue-300"
+                    title="View Note"
+                  >
+                    <Eye size={15} />
+                  </button>
                   <button
                     onClick={() => openEditModal(note)}
-                    className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors dark:text-slate-400 dark:hover:bg-purple-500/10 dark:hover:text-purple-300"
                     title="Edit Note"
                   >
                     <Pencil size={15} />
                   </button>
                   <button
                     onClick={() => openDeleteModal(note._id)}
-                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-300"
                     title="Delete Note"
                   >
                     <Trash2 size={15} />
@@ -327,7 +352,7 @@ const Notes = () => {
                 </div>
 
                 {/* Subject Badge */}
-                <div className="flex items-center mb-3">
+                <div className="flex items-center mb-4">
                   <div className="flex items-center gap-1.5 bg-gray-50 text-gray-700 px-2.5 py-1 rounded-md text-xs font-semibold border border-gray-100">
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: subjInfo.color }} />
                     <span className="truncate max-w-[150px]">{subjInfo.name}</span>
@@ -335,14 +360,18 @@ const Notes = () => {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 mb-4 cursor-pointer" onClick={() => openEditModal(note)}>
-                  <h3 className="text-lg font-bold text-gray-900 truncate pr-14 mb-2" title={note.title}>
+                <button
+                  type="button"
+                  className="flex-1 mb-5 cursor-pointer text-left rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/40"
+                  onClick={() => openViewModal(note)}
+                >
+                  <h3 className="text-xl font-bold text-gray-900 line-clamp-2 pr-20 mb-3" title={note.title}>
                     {note.title}
                   </h3>
-                  <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-sm text-gray-600 line-clamp-6 leading-7 whitespace-pre-wrap">
                     {note.content}
                   </p>
-                </div>
+                </button>
 
                 {/* Footer details */}
                 <div className="mt-auto pt-4 border-t border-gray-100">
@@ -389,10 +418,80 @@ const Notes = () => {
         </div>
       )}
 
+      {/* Read-only View Modal */}
+      {isViewModalOpen && selectedNote && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[92vh] dark:bg-slate-900 dark:border dark:border-slate-800">
+            <div className="flex flex-col gap-4 p-6 border-b border-gray-100 md:flex-row md:items-start md:justify-between dark:border-slate-800">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-bold text-gray-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: getSubjectDisplayInfo(selectedNote.subjectId).color }}
+                    />
+                    {getSubjectDisplayInfo(selectedNote.subjectId).name}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300">
+                    <Calendar size={12} />
+                    {formatDate(selectedNote.createdAt)}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-bold text-green-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+                    <Eye size={12} />
+                    Read-only
+                  </span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight dark:text-slate-50">
+                  {selectedNote.title}
+                </h2>
+              </div>
+              <button onClick={closeViewModal} className="self-end md:self-start p-1.5 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 dark:bg-slate-950/40">
+              {selectedNote.tags && selectedNote.tags.length > 0 && (
+                <div className="mb-6 flex flex-wrap gap-2">
+                  {selectedNote.tags.map((tag, idx) => (
+                    <span key={idx} className="inline-flex items-center gap-1 text-xs font-semibold bg-purple-50 text-purple-700 px-3 py-1 rounded-full border border-purple-100 dark:border-purple-400/30 dark:bg-purple-500/10 dark:text-purple-200">
+                      <Tag size={12} /> {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <article className="min-h-[360px] rounded-2xl border border-gray-200 bg-gray-50/70 p-6 text-base leading-8 text-gray-800 whitespace-pre-wrap dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                {selectedNote.content}
+              </article>
+            </div>
+
+            <div className="p-5 border-t border-gray-100 flex flex-col gap-3 bg-gray-50/50 sm:flex-row sm:justify-end dark:border-slate-800 dark:bg-slate-900">
+              <button
+                type="button"
+                onClick={() => handleGenerateAI(selectedNote)}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors dark:border-indigo-400/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:bg-indigo-500/20"
+              >
+                <Sparkles size={16} />
+                Generate AI Reviewer
+              </button>
+              <button
+                type="button"
+                onClick={() => openEditModal(selectedNote)}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-purple-600 rounded-xl hover:bg-purple-700 transition-colors shadow-sm"
+              >
+                <Pencil size={16} />
+                Edit Note
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Form Modal ── */}
       {isFormModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-2xl w-full max-w-5xl shadow-xl flex flex-col max-h-[92vh]">
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h2 className="text-xl font-bold text-gray-800">
                 {editingId ? 'Edit Note' : 'Create Note'}
@@ -456,7 +555,7 @@ const Notes = () => {
                       name="content"
                       value={formData.content}
                       onChange={handleFormChange}
-                      rows="8"
+                      rows="14"
                       className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50 focus:bg-white font-mono text-sm leading-relaxed resize-y"
                       placeholder="Write your study notes here..."
                     />
@@ -480,11 +579,11 @@ const Notes = () => {
               </form>
             </div>
             
-            <div className="p-5 border-t border-gray-100 flex gap-3 justify-end bg-gray-50/50">
+            <div className="p-5 border-t border-gray-100 flex gap-3 justify-end bg-gray-50/50 dark:border-slate-800 dark:bg-slate-900">
               <button
                 type="button"
                 onClick={closeFormModal}
-                className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 transition-colors"
+                className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 transition-colors dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>

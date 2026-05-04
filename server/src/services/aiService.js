@@ -206,6 +206,7 @@ const normalizeReviewer = (data) => ({
   questions: Array.isArray(data.questions)
     ? data.questions.map((item) => ({
         question: String(item.question || ''),
+        choices: normalizeChoices(item.choices, item.answer),
         answer: String(item.answer || '')
       }))
     : [],
@@ -216,6 +217,23 @@ const normalizeReviewer = (data) => ({
       }))
     : []
 });
+
+const normalizeChoices = (choices, answer) => {
+  const normalizedAnswer = String(answer || '').trim();
+  const normalizedChoices = Array.isArray(choices)
+    ? choices
+        .map((choice) => String(choice || '').trim())
+        .filter(Boolean)
+    : [];
+
+  const uniqueChoices = [...new Set(normalizedChoices)];
+
+  if (normalizedAnswer && !uniqueChoices.includes(normalizedAnswer)) {
+    uniqueChoices.unshift(normalizedAnswer);
+  }
+
+  return uniqueChoices.slice(0, 4);
+};
 
 const normalizeStudyRecommendation = (data) => ({
   mainRecommendation: String(data.mainRecommendation || ''),
@@ -279,6 +297,12 @@ Rules:
   "questions": [
     {
       "question": "string",
+      "choices": [
+        "string",
+        "string",
+        "string",
+        "string"
+      ],
       "answer": "string"
     }
   ],
@@ -289,6 +313,12 @@ Rules:
     }
   ]
 }
+
+For each question:
+- Create four multiple-choice options when the note contains enough related details.
+- One choice must exactly match the answer field.
+- Distractor choices must still come from or be directly supported by the note content.
+- Do not add outside facts just to create more choices.
 `;
 
   const data = await callAiJson({ prompt, temperature: 0.2 });
